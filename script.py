@@ -24,8 +24,8 @@ dhis2auth = ('svcECHO', '1WantToSeeMyD@t@!')
 
 # Set the working directory
 
-#main_dir = r"\\ad.abt.local\Projects\Projects\ECHO\Data"
-main_dir = r"C:\Projects\ECHO\Data"
+main_dir = r"\\ad.abt.local\Projects\Projects\ECHO\Data"
+# main_dir = r"C:\Projects\ECHO\Data"
 
 # Check if the directory exists before changing to it
 if os.path.exists(main_dir):

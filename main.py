@@ -18,8 +18,8 @@ DHIS2_AUTH = ('svcECHO', '1WantToSeeMyD@t@!')
 BASE_URL = "https://dhis2.echomoz.org/api/29"
 
 # Adjust this path as needed
-MAIN_DIR = r"C:\Projects\ECHO\Data"
-#main_dir = r"\\ad.abt.local\Projects\Projects\ECHO\Data"
+#MAIN_DIR = r"C:\Projects\ECHO\Data"
+main_dir = r"\\ad.abt.local\Projects\Projects\ECHO\Data"
 
 # Files to back up
 FILES_TO_BACKUP = [
