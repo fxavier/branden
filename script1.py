@@ -19,8 +19,8 @@ process_start = datetime.now()
 # ---------------------------------------------------------------------
 dhis2auth = ('svcECHO', '1WantToSeeMyD@t@!')  
 
-main_dir = r"\\ad.abt.local\Projects\Projects\ECHO\Data"
-# main_dir = r"C:\\Docs\\Data"
+# main_dir = r"\\ad.abt.local\Projects\Projects\ECHO\Data"
+main_dir = r"C:\\Docs\\Data"
 os.chdir(main_dir)
 print("Working directory:", os.getcwd())
 
@@ -39,13 +39,16 @@ except Exception as e:
     print('No data to back up or error reading dataUpdateDatetime.csv:', e)
 
 # Create a backup directory in the form yyyy-mm-dd
-if backupDate != '':
+backup_dir = None  # Initialize backup_dir to ensure it's defined
+
+if backupDate != '': 
     backup_dir = os.path.join(main_dir, 'Backup', backupDate)
-    try:
-        os.mkdir(backup_dir)
+    try: 
+        os.makedirs(backup_dir, exist_ok=True)  # Use os.makedirs to create intermediate directories if needed
         print("Directory created:", backup_dir)
     except Exception as e:
         print("Directory not created:", e.__class__, "occurred.")
+        backup_dir = None  # Reset backup_dir to None if creation fails
 
 # Back up old data
 file_list = [
@@ -57,14 +60,17 @@ file_list = [
     'dataValues.csv'
 ]
 
-for filename in file_list:
-    source_path = os.path.join(main_dir, filename)
-    dest_path = os.path.join(backup_dir, filename)
-    try:
-        copyfile(source_path, dest_path)
-        print(filename, "backed up")
-    except Exception as e:
-        print(filename, "not backed up:", e.__class__, "occurred.")
+if backup_dir:  # Check if backup_dir is defined
+    for filename in file_list:
+        source_path = os.path.join(main_dir, filename)
+        dest_path = os.path.join(backup_dir, filename)
+        try:
+            copyfile(source_path, dest_path)
+            print(filename, "backed up")
+        except Exception as e:
+            print(filename, "not backed up:", e.__class__, "occurred.")
+else:
+    print("Backup directory not available, skipping backup.")
 
 # ---------------------------------------------------------------------
 # 4. ORGANISATION UNIT GROUPS
@@ -115,9 +121,10 @@ response = requests.get(f"https://dhis2.echomoz.org/api/29/geoFeatures?ou=ou:OU_
 echoGeoFeatures = pd.DataFrame(response.json())
 echoGeoFeatures = echoGeoFeatures[["id", "na", "co"]]
 
-echoGeoFeatures["longitude"] = echoGeoFeatures["co"].str.split(',', 1).str[0].str.strip('[')
-echoGeoFeatures["latitude"] = echoGeoFeatures["co"].str.split(',', 1).str[1].str.strip(']')
+echoGeoFeatures["longitude"] = echoGeoFeatures["co"].str.split(',', n=1).str[0].str.strip('[')
+echoGeoFeatures["latitude"] = echoGeoFeatures["co"].str.split(',', n=1).str[1].str.strip(']')
 echoGeoFeatures = echoGeoFeatures[['id', 'latitude', 'longitude']]
+echoGeoFeatures[:5]
 
 orgUnitData = orgUnitData.merge(echoGeoFeatures, how='left', on='id')
 
@@ -158,12 +165,15 @@ response = requests.get(
 dataElements = pd.DataFrame(response.json()['dataElements'])
 
 # Convert the data element group dictionaries to a semicolon-delimited list
-sep = ';'
-group_strings = []
-for idx, row_value in dataElements["dataElementGroups"].iteritems():
+separator = ';'
+dataElementGroupString = []
+
+for idx, row_value in dataElements["dataElementGroups"].items():
     keylist = [entry["id"] for entry in row_value]
-    group_strings.append(sep.join(keylist))
-dataElements["dataElementGroups"] = group_strings
+    dataElementGroupString.append(separator.join(keylist))
+
+dataElements["dataElementGroups"] = dataElementGroupString
+dataElements[:5]
 
 # Replace the data element group IDs with names
 dataElements["dataElementGroups"] = dataElements["dataElementGroups"].replace(
@@ -224,7 +234,7 @@ indicators = indicators.set_index("id")
 # Convert the indicator group dictionaries
 sep = ';'
 indicator_group_strings = []
-for idx, row_value in indicators["indicatorGroups"].iteritems():
+for idx, row_value in indicators["indicatorGroups"].items():
     keylist = [entry["id"] for entry in row_value]
     indicator_group_strings.append(sep.join(keylist))
 
