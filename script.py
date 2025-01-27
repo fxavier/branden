@@ -52,28 +52,39 @@ except:
 
 # Create a backup directory in the form yyyy-mm-dd
 
+backup_dir = None  # Initialize backup_dir to ensure it's defined
+
 if backupDate != '': 
-    backupDir = main_dir + '\\Backup\\' + backupDate
+    backup_dir = os.path.join(main_dir, 'Backup', backupDate)
     try: 
-        os.mkdir(backupDir)
-        print("Directory created: " + backupDir)
+        os.mkdir(backup_dir)
+        print("Directory created:", backup_dir)
     except Exception as e:
-        print("Directory not created: ", e.__class__, "occurred.")   
+        print("Directory not created:", e.__class__, "occurred.")
 
 
 # Back up old data
 
-fileList = ['dataUpdateDatetime.csv', 'organisationUnits.csv', 'dataElements.csv', 'categoryOptionCombos.csv', 'indicators.csv', 'dataValues.csv']
+file_list = [
+    'dataUpdateDatetime.csv',
+    'organisationUnits.csv',
+    'dataElements.csv',
+    'categoryOptionCombos.csv',
+    'indicators.csv',
+    'dataValues.csv'
+]
 
-for filename in fileList: 
-    try: 
-        if backupDate != '':
-            copyfile(main_dir + '\\' + filename, backupDir + '\\' + filename) 
-            print(filename + " backed up")
-        else:
-            print(f"No backup directory available for {filename}")
-    except Exception as e:
-        print(filename + " not backed up: ", e.__class__, "occurred.")   
+if backup_dir:  # Check if backup_dir is defined
+    for filename in file_list:
+        source_path = os.path.join(main_dir, filename)
+        dest_path = os.path.join(backup_dir, filename)
+        try:
+            copyfile(source_path, dest_path)
+            print(filename, "backed up")
+        except Exception as e:
+            print(filename, "not backed up:", e.__class__, "occurred.")
+else:
+    print("Backup directory not available, skipping backup.")
 
 
 # Get Organisation Unit Groups
